@@ -1,3 +1,6 @@
+-- Toxic Release 2021 Data Exploration Project
+-- Techniques used Aggregarte Functions, Coverting Data Types, Joins, Temp Table, CTEs, 
+
 SELECT *
 FROM Location
 
@@ -32,7 +35,7 @@ WHERE [FEDERAL FACILITY] = 'YES')/
 (SELECT CAST(COUNT([FEDERAL FACILITY]) AS numeric)
 FROM Location) *100) AS PercentTriFedFacility
 
--- Percentage of TRI forms from federal facilities in each state
+-- Use CTE to Calculate Percentage of TRI forms from federal facilities in each state
 WITH CTE_StateFedFacility (ST, FedFacilityCount) AS
 (SELECT ST, CAST(COUNT([FEDERAL FACILITY]) AS numeric)
 FROM Location 
@@ -45,13 +48,7 @@ JOIN Location
 ON CTE_StateFedFacility.ST = Location.ST
 GROUP BY Location.ST, FedFacilityCount 
 ORDER BY PercentFedFacilSt DESC
-
--- Taking a closer look at the ST with largest percentage of federal facility
-SELECT COUNT (ID) as TriFormCount, [INDUSTRY SECTOR]
-FROM Location
-WHERE ST = 'DC'
-GROUP BY [INDUSTRY SECTOR]
-
+  
 --Industry sector with most TRI forms from Federal Facilities
 SELECT [INDUSTRY SECTOR], COUNT(ID) AS NumOfTriForms
 FROM Location
@@ -112,7 +109,6 @@ GROUP BY ST, CHEMICAL
 ORDER BY NumOfTriForms DESC
 
 -- Closer look at the chemical characteristics of toxic waste
-
 -- Number of lead related TRI forms 
 SELECT COUNT(CHEMICAL)
 FROM ChemicalClass
@@ -139,20 +135,6 @@ WHERE CARCINOGEN = 'YES' AND METAL = 'YES')/
 (SELECT CAST(COUNT(ID) AS numeric)
 FROM ChemicalClass) *100) AS PercentOfTriForms
 
--- Metal category with most carcinogen compunds
-SELECT [METAL CATEGORY], COUNT(ID) AS NumOfTriForms
-FROM ChemicalClass
-WHERE CARCINOGEN = 'Yes'
-GROUP BY [METAL CATEGORY]
-ORDER BY NumOfTriForms DESC
-
--- Chemicals not clean air chemicals and carcinogens
-SELECT((SELECT CAST(COUNT(DISTINCT CAS#) AS numeric)
-FROM ChemicalClass 
-WHERE CARCINOGEN = 'YES' AND [CLEAN AIR ACT CHEMICAL] = 'NO')/
-(SELECT CAST(COUNT(DISTINCT CAS#) AS numeric)
-FROM ChemicalClass) *100) AS PercentOfTriForms
-
 -- Looking at waste production 
 SELECT * 
 FROM Waste
@@ -163,7 +145,7 @@ SELECT [UNIT OF MEASURE], COUNT([UNIT OF MEASURE]) AS NumOfTriForms
 FROM Waste
 GROUP BY [UNIT OF MEASURE]
 
---Convert evrything to same unit of measure 
+-- Using a Temp Table to convert evrything to same unit of measure 
 CREATE TABLE #TotalReleasesPounds
 (ID int, 
 TotalReleasesPounds float)
